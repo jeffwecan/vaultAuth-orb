@@ -1,0 +1,25 @@
+description: >
+  This command retrieves a token from Vault and sets it in the environment.
+
+parameters:
+  auth_path:
+    type: string
+    default: "circleci"
+    description: "The auth path the CircleCI authentication method has been enabled under."
+  vault_addr:
+    type: string
+    default: "http://localhost:8200"
+    description: "Address of the Vault cluster to authenticate against."
+  vault_version:
+    type: string
+    default: "1.5.3"
+    description: "Version of Vault to install for local CLI operations."
+
+steps:
+  - run:
+      environment:
+        PARAM_AUTH_PATH: <<parameters.auth_path>>
+        PARAM_VAULT_ADDR: <<parameters.vault_addr>>
+        PARAM_VAULT_VERSION: <<parameters.vault_version>>
+      name: Authenticate to Vault
+      command: <<include(scripts/login.sh)>>
