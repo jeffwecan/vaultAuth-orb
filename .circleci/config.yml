@@ -1,4 +1,11 @@
 version: 2.1
+
+executors:
+  vault-circleci-auth-plugin:
+    docker:
+      - image: jeffwecan/vaultauth-orb-ci:latest
+
+
 orbs:
   # Replace this with your own!
   vault-auth-circleci: jeffwecan/vault-auth-circleci@<<pipeline.parameters.dev-orb-version>>
@@ -24,6 +31,7 @@ parameters:
 jobs:
   # Define one or more jobs which will utilize your orb's commands and parameters to validate your changes.
   integration-test-1:
+    # executor: vault-circleci-auth-plugin
     docker:
       - image: cimg/base:stable
     steps:
@@ -46,6 +54,7 @@ workflows:
           exclude: SC2148
       # optional: Run BATS tests against your scripts
       - bats/run:
+          # exec_environment: vault-circleci-auth-plugin
           path: ./src/tests
       # If you accept building open source forks, protect your secrects behind a restricted context.
       # A job containing restricted context (which holds your orb publishing credentials) may only be accessed by a user with proper permissions.

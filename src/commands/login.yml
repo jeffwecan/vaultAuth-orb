@@ -1,25 +1,48 @@
-description: >
-  This command retrieves a token from Vault and sets it in the environment.
-
+description: |
+  Performs a Vault login, token will be stored at ~/.vault-token for further Vault CLI commands
+  Requirements: vault
 parameters:
-  auth_path:
+  vault-addr:
+    description: Vault address
     type: string
+  method:
     default: "circleci"
-    description: "The auth path the CircleCI authentication method has been enabled under."
-  vault_addr:
+    description: Vault auth method e.g. userpass, approle, token
     type: string
-    default: "http://localhost:8200"
-    description: "Address of the Vault cluster to authenticate against."
-  vault_version:
+  path:
+    default: ""
+    description: Path for the auth method, leave blank to use default path based on chosen method
     type: string
-    default: "1.5.3"
-    description: "Version of Vault to install for local CLI operations."
-
+  username:
+    default: ""
+    description: (userpass method only) User name to login with
+    type: string
+  password:
+    default: ""
+    description: (userpass method only) Password to login with
+    type: string
+  token:
+    default: ""
+    description: (token method only) Token to login with
+    type: string
+  role-id:
+    default: ""
+    description: (approle method only) RoleID to login with
+    type: string
+  secret-id:
+    default: ""
+    description: (approle method only) SecretID to login with
+    type: string
 steps:
   - run:
+      name: Login to Vault
       environment:
-        PARAM_AUTH_PATH: <<parameters.auth_path>>
-        PARAM_VAULT_ADDR: <<parameters.vault_addr>>
-        PARAM_VAULT_VERSION: <<parameters.vault_version>>
-      name: Authenticate to Vault
-      command: <<include(scripts/login.sh)>>
+        VAULT_ADDR: << parameters.vault-addr >>
+        PARAM_METHOD: << parameters.method >>
+        PARAM_PATH: << parameters.path >>
+        PARAM_USERNAME: << parameters.username >>
+        PARAM_PASSWORD: << parameters.password >>
+        PARAM_TOKEN: << parameters.token >>
+        PARAM_ROLEID: << parameters.role-id >>
+        PARAM_SECRETID: << parameters.secret-id >>
+      command: << include(scripts/login.sh) >>

@@ -1,0 +1,22 @@
+description: >
+  Login to Vault with username and password
+usage:
+  version: 2.1
+  orbs:
+    vault: jeffwecan/vault-auth-circleci@dev:alpha
+  jobs:
+    build:
+      docker:
+        - image: cimg/base:stable
+      steps:
+        - checkout
+        - vault/install
+        - vault/login:
+            vault_addr: << parameter.vault_addr >>
+            method: userpass
+            username: << parameter.vault_username >>
+            password: << parameter.vault_password >>
+  workflows:
+    main:
+      jobs:
+        - build

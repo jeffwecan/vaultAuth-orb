@@ -1,0 +1,24 @@
+description: |
+  This command installs the Vault binary in your build
+  Requirements: curl, gpg (optional), jq (optional)
+parameters:
+  version:
+    default: ""
+    description: The Vault version, leave blank to download latest.
+    type: string
+  arch:
+    default: "amd64"
+    description: The target platform architecture
+    type: string
+  verify:
+    default: true
+    description: Verifies the integrity of the binary, requires jq and gpg
+    type: boolean
+steps:
+  - run:
+      name: Install the Vault binary
+      environment:
+        PARAM_VERSION: << parameters.version >>
+        PARAM_ARCH: << parameters.arch >>
+        PARAM_VERIFY: << parameters.verify >>
+      command: << include(scripts/install.sh) >>

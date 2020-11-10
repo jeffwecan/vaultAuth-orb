@@ -1,0 +1,17 @@
+description: >
+  Install Vault binary into a build
+usage:
+  version: 2.1
+  orbs:
+    vault: jeffwecan/vault-auth-circleci@dev:alpha
+  jobs:
+    build:
+      docker:
+        - image: cimg/base:stable
+      steps:
+        - checkout
+        - vault/install
+  workflows:
+    main:
+      jobs:
+        - build

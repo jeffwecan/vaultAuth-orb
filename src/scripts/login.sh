@@ -1,36 +1,67 @@
-# ensure_vault_cli_installed() {
-#     VAULT_URL="https://releases.hashicorp.com/vault"
-#     curl \
-#         --silent \
-#         --remote-name \
-#         "${VAULT_URL}/${PARAM_VAULT_VERSION}/vault_${PARAM_VAULT_VERSION}_linux_amd64.zip"
-#     curl \
-#         --silent \
-#         --remote-name \
-#         "${VAULT_URL}/vault/${PARAM_VAULT_VERSION}/vault_${PARAM_VAULT_VERSION}_SHA256SUMS"
-#     curl \
-#         --silent \
-#         --remote-name \
-#         "${VAULT_URL}/${PARAM_VAULT_VERSION}/${PARAM_VAULT_VERSION}/vault_${PARAM_VAULT_VERSION}_SHA256SUMS.sig"
+#!/bin/sh
 
-#     gpg --keyserver keyserver.ubuntu.com --recv-keys 51852D87348FFC4C
-#     gpg --verify vault_1.5.3_SHA256SUMS.sig vault_1.5.3_SHA256SUMS
-
-# }
-
-Login() {
-    ensure_vault_cli_installed
-    vault write -address="$PARAM_VAULT_ADDR"\
-        "auth/$PARAM_AUTH_PATH/login" \
+login_circleci() {
+    path="$1"
+    vault write "auth/$path/login"  \
         project="$CIRCLE_PROJECT_REPONAME" \
         build_num="$CIRCLE_BUILD_NUM" \
-        vcs_revision="$CIRCLE_SHA1"
-    echo Hello "${PARAM_TO}"
+        vcs_revision="$CIRCLE_SHA1" \
+    | grep token | awk '{print $2}' | head -n 1 > ~/.vault-token
 }
 
-# Will not run if sourced for bats-core tests.
-# View src/tests for more information.
+login_userpass() {
+    username=$1
+    password=$2
+    path=$3
+    vault login -no-print -method=userpass -path="$path" username="$username" password="$password"
+}
+
+login_token() {
+    token=$1
+    vault login -no-print -method=token -path="$path" token="$token"
+}
+
+login_approle() {
+    role_id=$1
+    secret_id=$2
+    path=$3
+    vault write "auth/$path/login" role_id="$role_id" secret_id="$secret_id" | grep token | awk '{print $2}' | head -n 1 > ~/.vault-token
+}
+
+login_main() {
+    METHOD=$1
+    AUTH_PATH="$PARAM_PATH"
+
+    if [ "$AUTH_PATH" = "" ]; then
+        AUTH_PATH=$METHOD
+    fi
+
+    case "$METHOD" in
+
+    circleci)
+      login_circleci "$AUTH_PATH"
+      ;;
+
+    userpass)
+      login_userpass "$PARAM_USERNAME" "$PARAM_PASSWORD" "$AUTH_PATH"
+      ;;
+
+    token)
+      login_token "$PARAM_TOKEN" "$AUTH_PATH"
+      ;;
+
+    approle)
+      login_approle "$PARAM_ROLEID" "$PARAM_SECRETID" "$AUTH_PATH"
+      ;;
+
+    *)
+      echo "Unsupported login method"
+      exit 1
+      ;;
+    esac
+}
+
 ORB_TEST_ENV="bats-core"
-if [ "${0#*$ORB_TEST_ENV}" == "$0" ]; then
-    Login
+if [ "${0#*$ORB_TEST_ENV}" = "$0" ]; then
+    login_main "$PARAM_METHOD"
 fi
