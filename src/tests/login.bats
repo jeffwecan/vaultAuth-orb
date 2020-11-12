@@ -66,7 +66,7 @@ teardown() {
     user=$(vault read -format=json auth/token/lookup-self | jq -r '.data | .display_name')
     echo "stdout user: $user" 2>&1
     echo "stderr user: $user" 1>&2
-    [ $user == "userpass-testuser" ]
+    [ $user == "vaultAuth-orb-$CIRCLE_BUILD_NUM" ]
 }
 
 @test "login with username and password" {
