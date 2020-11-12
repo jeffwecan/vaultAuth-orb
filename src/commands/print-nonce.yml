@@ -1,0 +1,17 @@
+description: |
+  Requests and then prints a nonce needed for the Vault CircleCI authentication method
+parameters:
+  vault-addr:
+    description: Vault address
+    type: string
+  path:
+    default: ""
+    description: Path for the auth method, leave blank to use default path based on chosen method
+    type: string
+steps:
+  - run:
+      name: Login to Vault
+      environment:
+        VAULT_ADDR: << parameters.vault-addr >>
+        PARAM_PATH: << parameters.path >>
+      command: << include(scripts/print_nonce.sh) >>
