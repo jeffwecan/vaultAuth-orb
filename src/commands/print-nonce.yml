@@ -10,7 +10,7 @@ parameters:
     type: string
 steps:
   - run:
-      name: Login to Vault
+      name: Print nonce as initial step in Vault CircleCI auth login process
       environment:
         VAULT_ADDR: << parameters.vault-addr >>
         PARAM_PATH: << parameters.path >>
