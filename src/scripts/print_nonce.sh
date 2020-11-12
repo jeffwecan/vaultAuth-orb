@@ -23,7 +23,8 @@ InstallJq() {
 
 print_circleci_auth_nonce() {
     InstallJq
-    vault write -format=json "auth/$PARAM_PATH/nonce" build_num="$CIRCLE_BUILD_NUM" | jq '.data | {nonce: .nonce}'
+    vault write -format=json "auth/$PARAM_PATH/nonce" build_num="$CIRCLE_BUILD_NUM" \
+        | jq -M -c '.data | {nonce: .nonce}'
 }
 
 ORB_TEST_ENV="bats-core"
