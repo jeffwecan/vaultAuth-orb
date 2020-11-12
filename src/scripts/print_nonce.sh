@@ -16,7 +16,7 @@ InstallJq() {
 
     elif grep Alpine < /etc/issue > /dev/null 2>&1; then
         echo "Checking For JQ: Alpine"
-        command -v jq >/dev/null 2>&1 || { echo >&2 "VAULT ORB ERROR: JQ is required. Please install"; exit 1; }
+        command -v jq >/dev/null 2>&1 || { apk add --no-cache jq; }
         return $?
     fi
 }
