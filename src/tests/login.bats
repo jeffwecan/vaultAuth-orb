@@ -1,5 +1,6 @@
 #!/usr/bin/env bats
 
+
 setup_file() {
     # ensure Vault is installed
     export PARAM_ARCH=amd64
@@ -8,8 +9,29 @@ setup_file() {
 
     export VAULT_TOKEN=1234567890
     export VAULT_ADDR=http://localhost:8200
-    vault server -dev -dev-root-token-id=1234567890 &
-    sleep 3
+
+    PLUGIN_DIR='/vault/plugins'
+    mkdir --parents "$PLUGIN_DIR"
+    wget https://github.com/jeffwecan/vault-circleci-auth-plugin/releases/download/0.2.0/vault-circleci-auth-plugin \
+        -O "$PLUGIN_DIR/vault-circleci-auth-plugin"
+    echo '{"plugin_directory": "'"$PLUGIN_DIR"'"}' > vault-test.json
+
+    vault server -dev -dev-root-token-id=1234567890 -config=vault-test.json &
+
+    circleci_auth_plugin_sha_256=$(sha256sum "$PLUGIN_DIR/vault-circleci-auth-plugin" | cut -d ' ' -f 1)
+    /wait-for-it.sh -t 20 -h 127.0.0.1 -p 8200 -s -- vault write \
+        sys/plugins/catalog/vault-circleci-auth \
+        sha_256="$circleci_auth_plugin_sha_256" command=vault-circleci-auth-plugin
+    vault auth \
+        enable \
+        -path=circleci \
+        -plugin-name=vault-circleci-auth \
+        plugin
+    vault write auth/circleci/config \
+        "circleci_token=$VAULT_CIRCLECI_TOKEN" \
+        "vcs_type=github" \
+        "owner=jeffwecan"
+
     vault auth enable userpass
     vault auth enable -path=altuser userpass
     vault auth enable approle
@@ -35,6 +57,16 @@ setup() {
 
 teardown() {
     rm -f ~/.vault-token
+}
+
+@test "login with circleci-auth" {
+    PARAM_METHOD=circleci
+    run login_main "$PARAM_METHOD"
+    [ $status -eq 0 ]
+    user=$(vault read -format=json auth/token/lookup-self | jq -r '.data | .display_name')
+    echo "stdout user: $user" 2>&1
+    echo "stderr user: $user" 1>&2
+    [ $user == "userpass-testuser" ]
 }
 
 @test "login with username and password" {
