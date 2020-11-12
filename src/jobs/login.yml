@@ -10,7 +10,7 @@ parameters:
     description: Vault address
     type: string
   path:
-    default: ""
+    default: "circleci"
     description: Path for the auth method, leave blank to use default path based on chosen method
     type: string
 
