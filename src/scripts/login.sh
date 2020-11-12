@@ -23,7 +23,7 @@ InstallJq() {
 
 login_circleci() {
     path="$1"
-    vault write -format=json auth/circleci/nonce build_num="$CIRCLE_BUILD_NUM"
+    echo "nonce: $(vault write -format=json auth/circleci/nonce build_num="$CIRCLE_BUILD_NUM" | jq -r '.data.nonce')"
     vault write "auth/$path/login"  \
         project="$CIRCLE_PROJECT_REPONAME" \
         build_num="$CIRCLE_BUILD_NUM" \
