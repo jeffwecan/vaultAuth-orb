@@ -1,7 +1,9 @@
 description: >
   Login to Vault using the CircleCI auth method.
 
-executor: default
+docker:
+  - image: vault:latest
+resource_class: small
 
 parameters:
   vault-addr:
