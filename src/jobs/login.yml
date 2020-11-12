@@ -7,10 +7,16 @@ parameters:
   vault-addr:
     description: Vault address
     type: string
+  path:
+    default: ""
+    description: Path for the auth method, leave blank to use default path based on chosen method
+    type: string
 
 steps:
   - install
   - print-nonce:
       vault-addr: << parameters.vault-addr >>
-  - vault/login:
+      path: << parameters.path >>
+  - login:
       vault-addr: << parameters.vault-addr >>
+      path: << parameters.path >>
