@@ -2,7 +2,7 @@ description: >
   Login to Vault using the CircleCI auth method.
 
 docker:
-  - image: vault:latest
+  - image: 'cimg/base:stable'
 resource_class: small
 
 parameters:
