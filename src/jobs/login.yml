@@ -1,0 +1,16 @@
+description: >
+  Login to Vault using the CircleCI auth method.
+
+executor: default
+
+parameters:
+  vault-addr:
+    description: Vault address
+    type: string
+
+steps:
+  - install
+  - print-nonce:
+      vault-addr: << parameters.vault-addr >>
+  - vault/login:
+      vault-addr: << parameters.vault-addr >>

@@ -1,0 +1,47 @@
+description: |
+  Requests and then prints a nonce needed for the Vault CircleCI authentication method
+parameters:
+  vault-addr:
+    description: Vault address
+    type: string
+  method:
+    default: "circleci"
+    description: Vault auth method e.g. userpass, approle, token
+    type: string
+  path:
+    default: ""
+    description: Path for the auth method, leave blank to use default path based on chosen method
+    type: string
+  username:
+    default: ""
+    description: (userpass method only) User name to login with
+    type: string
+  password:
+    default: ""
+    description: (userpass method only) Password to login with
+    type: string
+  token:
+    default: ""
+    description: (token method only) Token to login with
+    type: string
+  role-id:
+    default: ""
+    description: (approle method only) RoleID to login with
+    type: string
+  secret-id:
+    default: ""
+    description: (approle method only) SecretID to login with
+    type: string
+steps:
+  - run:
+      name: Login to Vault
+      environment:
+        VAULT_ADDR: << parameters.vault-addr >>
+        PARAM_METHOD: << parameters.method >>
+        PARAM_PATH: << parameters.path >>
+        PARAM_USERNAME: << parameters.username >>
+        PARAM_PASSWORD: << parameters.password >>
+        PARAM_TOKEN: << parameters.token >>
+        PARAM_ROLEID: << parameters.role-id >>
+        PARAM_SECRETID: << parameters.secret-id >>
+      command: << include(scripts/login.sh) >>

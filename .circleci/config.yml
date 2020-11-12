@@ -60,18 +60,21 @@ workflows:
       # If you accept building open source forks, protect your secrects behind a restricted context.
       # A job containing restricted context (which holds your orb publishing credentials) may only be accessed by a user with proper permissions.
       # An open source user may begin a pipeline with a PR, and once the pipeline is approved by an authorized user at this point, the pipeline will continue with the proper context permissions.
-      - hold-for-dev-publish:
-          type: approval
-          requires:
-            - orb-tools/lint
-            - orb-tools/pack
-            # - bats/run
-            # - shellcheck/check
+      # - hold-for-dev-publish:
+      #     type: approval
+      #     requires:
+      #       - orb-tools/lint
+      #       - orb-tools/pack
+      #       - bats/run
+      #       - shellcheck/check
       # Publish development version(s) of the orb.
       - orb-tools/publish-dev:
           orb-name: jeffwecan/vault-auth-circleci
           context: orb-publishing # A restricted context containing your private publishing credentials. Will only execute if approved by an authorized user.
-          requires: [hold-for-dev-publish]
+          requires:
+            - orb-tools/lint
+            - orb-tools/pack
+          # requires: [hold-for-dev-publish]
       # Trigger an integration workflow to test the
       # dev:${CIRCLE_SHA1:0:7} version of your orb
       - orb-tools/trigger-integration-tests-workflow:
@@ -84,27 +87,27 @@ workflows:
   # when the run-integration-tests pipeline parameter is set to true.
   # It is meant to be triggered by the "trigger-integration-tests-workflow"
   # job, and run tests on <your orb>@dev:${CIRCLE_SHA1:0:7}.
-  integration-test_deploy:
-    when: << pipeline.parameters.run-integration-tests >>
-    jobs:
-      # Run any integration tests defined within the `jobs` key.
-      - integration-test-1
-      # Publish a semver version of the orb. relies on
-      # the commit subject containing the text "[semver:patch|minor|major|skip]"
-      # as that will determine whether a patch, minor or major
-      # version will be published or if publishing should
-      # be skipped.
-      # e.g. [semver:patch] will cause a patch version to be published.
-      - orb-tools/dev-promote-prod-from-commit-subject:
-          orb-name: jeffwecan/vault-auth-circleci
-          context: orb-publishing
-          add-pr-comment: false
-          fail-if-semver-not-indicated: true
-          publish-version-tag: false
-          requires:
-            - integration-test-1
-          filters:
-            branches:
-              only:
-                - master
-                - main
+  # integration-test_deploy:
+  #   when: << pipeline.parameters.run-integration-tests >>
+  #   jobs:
+  #     # Run any integration tests defined within the `jobs` key.
+  #     - integration-test-1
+  #     # Publish a semver version of the orb. relies on
+  #     # the commit subject containing the text "[semver:patch|minor|major|skip]"
+  #     # as that will determine whether a patch, minor or major
+  #     # version will be published or if publishing should
+  #     # be skipped.
+  #     # e.g. [semver:patch] will cause a patch version to be published.
+  #     - orb-tools/dev-promote-prod-from-commit-subject:
+  #         orb-name: jeffwecan/vault-auth-circleci
+  #         context: orb-publishing
+  #         add-pr-comment: false
+  #         fail-if-semver-not-indicated: true
+  #         publish-version-tag: false
+  #         requires:
+  #           - integration-test-1
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  #               - main
